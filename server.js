@@ -72,7 +72,7 @@ app.post('/newdonation', upload.single('proof_donation'), (req, res) => {
     total_donate: sanitizeInput(total_donate),
     phone_number: sanitizeInput(phone_number),
     message: sanitizeInput(message),
-    donation_date: sanitizeInput(donation_date),
+    donation_date: donation_date || new Date().toISOString(),
     proof_donation: proofDonationPath,
   };
 
