@@ -2,10 +2,9 @@ import express from 'express';
 import mysql from 'mysql';
 import cors from 'cors';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,7 +14,13 @@ const port = 3001;
 
 app.use(cors());
 app.use(express.json());
-app.use('/media', express.static(path.join(__dirname, 'media')));
+
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: 'degbii4qg',
+  api_key: '292118278849614',
+  api_secret: 'ZiWC1QjMjdMPj2eMYfT-xpkIlqY',
+});
 
 const db = mysql.createConnection({
   host: 'localhost',
@@ -24,19 +29,7 @@ const db = mysql.createConnection({
   database: 'db_yabali',
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, 'media');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 app.get('/listdonation', (req, res) => {
@@ -47,7 +40,7 @@ app.get('/listdonation', (req, res) => {
   });
 });
 
-app.post('/newdonation', upload.single('proof_donation'), (req, res) => {
+app.post('/newdonation', upload.single('proof_donation'), async (req, res) => {
   const {
     email,
     donatur_name,
@@ -56,7 +49,36 @@ app.post('/newdonation', upload.single('proof_donation'), (req, res) => {
     message,
     donation_date,
   } = req.body;
-  const proofDonationPath = req.file ? `${req.file.filename}` : null;
+
+  let proofDonationPath = null;
+
+  if (req.file) {
+    try {
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'donations',
+            transformation: [{ fetch_format: 'auto', quality: 'auto:low' }],
+          },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        uploadStream.end(req.file.buffer);
+      });
+      proofDonationPath = uploadResult.secure_url;
+    } catch (error) {
+      console.error('Error during Cloudinary upload:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to upload proof donation image',
+        error,
+      });
+    }
+  }
 
   const sanitizeInput = (input) => {
     if (typeof input === 'string') {
