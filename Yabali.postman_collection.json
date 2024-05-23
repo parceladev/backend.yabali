@@ -1,0 +1,63 @@
+{
+	"info": {
+		"_postman_id": "c5d3f9aa-d7ad-48b8-9ff0-3cd95bb848af",
+		"name": "Yabali",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34256503"
+	},
+	"item": [
+		{
+			"name": "List Donation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{api_url}}/listdonation"
+			},
+			"response": []
+		},
+		{
+			"name": "New Donation",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "test@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "donatur_name",
+							"value": "test",
+							"type": "text"
+						},
+						{
+							"key": "phone_number",
+							"value": "12345678",
+							"type": "text"
+						},
+						{
+							"key": "total_donate",
+							"value": "20000",
+							"type": "text"
+						},
+						{
+							"key": "message",
+							"value": "Nice Work",
+							"type": "text"
+						},
+						{
+							"key": "proof_donation",
+							"type": "file",
+							"src": "/C:/Users/ASUS/Downloads/test-legit-shoes/1.jpeg"
+						}
+					]
+				},
+				"url": "{{api_url}}/newdonation"
+			},
+			"response": []
+		}
+	]
+}
